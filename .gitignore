@@ -39,6 +39,5 @@ config.json
 nextjs/
 
 .env.local
-
-
-
+.vscode
+.vscode/launch.json
