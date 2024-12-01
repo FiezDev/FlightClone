@@ -1,18 +1,16 @@
 import {
   FormControl,
   InputLabel,
-//   Select,
-//   MenuItem,
-//   Divider,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import { useEffect } from "react";
 import "../../../App.css";
-import { useGetNearByAirports } from "../../../service/flightService";
 import { parseAsJson, useQueryState } from "nuqs";
 import { flightSchema } from "../../../utils/validation/flightSchema";
+import { useGetNearestRelevantAirports } from "../../../service/amadeusService";
 
 const OriginAirportInput = () => {
-
   const [flightData, setFlightData] = useQueryState(
     "flightData",
     parseAsJson(flightSchema.parse)
@@ -26,8 +24,8 @@ const OriginAirportInput = () => {
             const previousData = prev || flightSchema.parse({});
             return {
               ...previousData,
-              lat: position.coords.latitude.toString(),
-              lng: position.coords.longitude.toString(),
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
             };
           });
         },
@@ -38,42 +36,48 @@ const OriginAirportInput = () => {
     }
   }, [setFlightData]);
 
-  const { data: nearAirport } = useGetNearByAirports({
-    lat: flightData?.lat ?? '',
-    lng: flightData?.lng  ?? '',
-    locale: flightData?.locale  ?? '',
+  const { data: dataNearestRelevantAirports } = useGetNearestRelevantAirports({
+    latitude: flightData?.latitude ?? 0,
+    longitude: flightData?.longitude ?? 0,
   });
 
-  console.log(nearAirport)
+  console.log(dataNearestRelevantAirports)
 
-//   const handleLocaleChange = (value: string) => {
-//     setFlightData((prev) => {
-//         const previousData = prev || flightSchema.parse({});
-//         return {
-//           ...previousData,
-//           locale: value,
-//         };
-//       });  };
+  const handleOriginChange = (value: string) => {
+    setFlightData((prev) => {
+      const previousData = prev || flightSchema.parse({});
+
+      return {
+        ...previousData,
+        countryCode: value,
+      };
+
+    });
+    return value
+  };
 
   return (
     <FormControl fullWidth variant="outlined">
-      <InputLabel id="origin-select-label">Locale</InputLabel>
-      {/* <Select
+      <InputLabel id="origin-select-label">Origin</InputLabel>
+      <Select
         labelId="origin-select-label"
         id="origin-select"
-        value={selectedLocale}
-        onChange={(e) => handleLocaleChange(e.target.value)}
-        label="Locale"
+        value={flightData?.countryCode}
+        onChange={(e) => handleOriginChange(e.target.value)}
+        placeholder="Select Origin Airport"
+        label="Origin"
       >
-        {localeData.map((locale, index) => {
+        {dataNearestRelevantAirports?.data.map((airport) => {
           return [
-            index === 1 && <Divider key={`divider-${index}`} />,
-            <MenuItem key={`${locale.id}${locale.text}`} value={locale.id}>
-              {locale.text}
+            <MenuItem
+              key={`${airport.detailedName}`}
+              value={airport.iataCode}
+            >
+              {airport.name}
             </MenuItem>,
           ];
         })}
-      </Select> */}
+      </Select>
     </FormControl>
   );
 };

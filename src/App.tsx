@@ -1,10 +1,15 @@
-import Flight from "./modules/flight/Flight";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Flight from "./modules/flight";
+import SwaggerDoc from "./modules/swagger";
 
 const App = () => {
   return (
-    <>
-      <Flight />
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Flight />} />
+        <Route path="/swagger" element={<SwaggerDoc />} />
+      </Routes>
+    </Router>
   );
 };
 
