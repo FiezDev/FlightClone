@@ -25,7 +25,7 @@ const getAuthorizationHeader = async () => {
   }
 };
 
-const createAmadeusClient = async () => {
+const createAmadeusClient = async (isOverride?: boolean) => {
   const authorization = await getAuthorizationHeader();
 
   return axios.create({
@@ -34,9 +34,11 @@ const createAmadeusClient = async () => {
       Accept: "application/vnd.amadeus+json",
       "Content-Type": "application/json",
       Authorization: authorization,
+      ...(isOverride && { "X-HTTP-Method-Override": 'GET' }),
     },
   });
 };
+
 
 const amadeusClient = await createAmadeusClient();
 

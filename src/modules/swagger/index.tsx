@@ -5,6 +5,9 @@ import AirportNearestRelevant from "../swagger/spec/AirportNearestRelevant.json"
 import CitySearch from "../swagger/spec/CitySearch.json";
 import AirportCitySearch from "../swagger/spec/AirportCitySearch.json";
 import AirportRoutes from "../swagger/spec/AirportRoutes.json";
+import OnDemandFlightStatus from "../swagger/spec/OnDemandFlightStatus.json";
+import AirlineRoutes from "../swagger/spec/AirlineRoutes.json";
+import FlightAvailibilitiesSearch from "../swagger/spec/FlightAvailibilitiesSearch.json";
 import List from "@mui/material/List";
 import Box from "@mui/material/Box";
 import { ListItemButton, ListItemText } from "@mui/material";
@@ -30,6 +33,21 @@ const SwaggerDoc = () => {
       id: 4,
       spec: AirportRoutes,
       displayName: "Airport Routes",
+    },
+    {
+      id: 5,
+      spec: OnDemandFlightStatus,
+      displayName: "On-Demand Flight Status",
+    },
+    {
+      id: 6,
+      spec: AirlineRoutes,
+      displayName: "Airline Routes",
+    },
+    {
+      id: 7,
+      spec: FlightAvailibilitiesSearch,
+      displayName: "Flight Availibilities Search",
     },
   ];
 

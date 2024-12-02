@@ -1,8 +1,13 @@
-import { FormControl, Input, InputLabel } from "@mui/material";
-import "../../../App.css";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
 import { parseAsJson, useQueryState } from "nuqs";
 import { flightSchema } from "../../../utils/validation/flightSchema";
-import { useGetCitiesByKeyword } from "../../../service/amadeusService";
+import { useGetAirportDirectDestinations } from "../../../service/amadeusService";
+import "../../../App.css";
 
 const DestinationInput = () => {
   const [flightData, setFlightData] = useQueryState(
@@ -10,33 +15,41 @@ const DestinationInput = () => {
     parseAsJson(flightSchema.parse)
   );
 
-  const { data: dataNearestRelevantAirports } = useGetCitiesByKeyword({
-    keyword: flightData?.keyword ?? "",
-  });
+  const { data: dataAirportDirectDestinations, isFetched } =
+    useGetAirportDirectDestinations({
+      departureAirportCode: flightData?.OriginAirportIataCode ?? '',
+    });
 
-  console.log(dataNearestRelevantAirports);
-
-  const handleOriginChange = (value: string) => {
+  const handleDestinationChange = (value: string) => {
     setFlightData((prev) => {
       const previousData = prev || flightSchema.parse({});
       return {
         ...previousData,
-        destinationKeyword: value,
+        DestinationAirportIataCode: value,
       };
     });
     return value;
   };
 
-  return (
+  return !isFetched ? (
+    <div className="flex items-center justify-center w-full">Please Select Origin</div>
+  ) : (
     <FormControl fullWidth variant="outlined">
-      <InputLabel id="destination-select-label">Destination Keyword</InputLabel>
-      <Input
-        color="secondary"
+      <InputLabel id="destination-select-label">Destination</InputLabel>
+      <Select
+        labelId="destination-select-label"
+        placeholder="Select Destination"
         id="destination-select"
-        value={flightData?.keyword}
-        onChange={(e) => handleOriginChange(e.target.value)}
-        placeholder="Input Destination Airport"
-      ></Input>
+        value={flightData?.DestinationIataCode ?? ""}
+        onChange={(e) => handleDestinationChange(e.target.value)}
+        label="Destination"
+      >
+        {dataAirportDirectDestinations?.data.map((airport) => (
+          <MenuItem key={airport.iataCode} value={airport.iataCode}>
+            {airport.name}
+          </MenuItem>
+        ))}
+      </Select>
     </FormControl>
   );
 };

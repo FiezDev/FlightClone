@@ -1,6 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { amadeusClient } from "./amadeusApi";
-import { CitiesByKeywordRequest, CitiesByKeywordResponse, NearestRelevantAirportsRequest, NearestRelevantAirportsResponse } from "./amadeusService.type";
+import { CitiesByKeywordRequest, CitiesByKeywordResponse } from "./amadeusService.type/citiesByKeyword";
+import { AirportDirectDestinationsRequest, AirportDirectDestinationsResponse } from "./amadeusService.type/airportDirectDestinations";
+import { NearestRelevantAirportsRequest, NearestRelevantAirportsResponse } from "./amadeusService.type/nearestRelevantAirport";
+import {
+  FlightAvailabilitiesRequest,
+  FlightAvailabilitiesResponse,
+} from "./amadeusService.type/flightAvailabilities";
 
 export const useGetCitiesByKeyword = ({
   countryCode,
@@ -57,3 +63,48 @@ export const useGetNearestRelevantAirports = ({
         .then((response) => response.data),
   });
 };
+
+export const useGetAirportDirectDestinations = ({
+  departureAirportCode,
+  max,
+  arrivalCountryCode,
+}: AirportDirectDestinationsRequest) => {
+  const shouldFetch = Boolean(departureAirportCode);
+
+  return useQuery<AirportDirectDestinationsResponse>({
+    queryKey: ["get-airport-direct-destinations", departureAirportCode, max, arrivalCountryCode],
+    queryFn: () =>
+      amadeusClient
+        .get("/v1/airport/direct-destinations", {
+          params: {
+            departureAirportCode,
+            max,
+            arrivalCountryCode,
+          },
+        })
+        .then((response) => response.data),
+    enabled: shouldFetch,
+  });
+};
+
+export const useGetFlightAvailabilities = () => {
+
+  return useMutation({
+    mutationKey: ["get-flight-availabilities"],
+    mutationFn: (data: FlightAvailabilitiesRequest) =>
+      amadeusClient
+        .post<FlightAvailabilitiesResponse>(
+          "/v1/shopping/availability/flight-availabilities",
+          {...data},
+          {
+            headers: {
+              "X-HTTP-Method-Override": "GET",
+            },
+          }
+        )
+        .then((response) => response.data),
+  });
+};
+
+
+

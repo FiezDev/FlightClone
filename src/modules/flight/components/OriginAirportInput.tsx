@@ -41,15 +41,13 @@ const OriginAirportInput = () => {
     longitude: flightData?.longitude ?? 0,
   });
 
-  console.log(dataNearestRelevantAirports)
-
   const handleOriginChange = (value: string) => {
     setFlightData((prev) => {
       const previousData = prev || flightSchema.parse({});
 
       return {
         ...previousData,
-        countryCode: value,
+        OriginAirportIataCode: value,
       };
 
     });
@@ -62,7 +60,7 @@ const OriginAirportInput = () => {
       <Select
         labelId="origin-select-label"
         id="origin-select"
-        value={flightData?.countryCode}
+        value={flightData?.OriginAirportIataCode}
         onChange={(e) => handleOriginChange(e.target.value)}
         placeholder="Select Origin Airport"
         label="Origin"
