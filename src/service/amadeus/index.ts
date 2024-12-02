@@ -1,12 +1,21 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { amadeusClient } from "./amadeusApi";
-import { CitiesByKeywordRequest, CitiesByKeywordResponse } from "./amadeusService.type/citiesByKeyword";
-import { AirportDirectDestinationsRequest, AirportDirectDestinationsResponse } from "./amadeusService.type/airportDirectDestinations";
-import { NearestRelevantAirportsRequest, NearestRelevantAirportsResponse } from "./amadeusService.type/nearestRelevantAirport";
+import { useQuery } from "@tanstack/react-query";
+import { amadeusClient } from "./baseApi";
+import {
+  CitiesByKeywordRequest,
+  CitiesByKeywordResponse,
+} from "./type/citiesByKeyword";
+import {
+  AirportDirectDestinationsRequest,
+  AirportDirectDestinationsResponse,
+} from "./type/airportDirectDestinations";
+import {
+  NearestRelevantAirportsRequest,
+  NearestRelevantAirportsResponse,
+} from "./type/nearestRelevantAirport";
 import {
   FlightAvailabilitiesRequest,
   FlightAvailabilitiesResponse,
-} from "./amadeusService.type/flightAvailabilities";
+} from "./type/flightAvailabilities";
 
 export const useGetCitiesByKeyword = ({
   countryCode,
@@ -50,16 +59,19 @@ export const useGetNearestRelevantAirports = ({
     ],
     queryFn: () =>
       amadeusClient
-        .get<NearestRelevantAirportsResponse>("/v1/reference-data/locations/airports", {
-          params: {
-            latitude,
-            longitude,
-            radius,
-            "page[limit]": limit,
-            "page[offset]": offset,
-            sort,
-          },
-        })
+        .get<NearestRelevantAirportsResponse>(
+          "/v1/reference-data/locations/airports",
+          {
+            params: {
+              latitude,
+              longitude,
+              radius,
+              "page[limit]": limit,
+              "page[offset]": offset,
+              sort,
+            },
+          }
+        )
         .then((response) => response.data),
   });
 };
@@ -72,7 +84,12 @@ export const useGetAirportDirectDestinations = ({
   const shouldFetch = Boolean(departureAirportCode);
 
   return useQuery<AirportDirectDestinationsResponse>({
-    queryKey: ["get-airport-direct-destinations", departureAirportCode, max, arrivalCountryCode],
+    queryKey: [
+      "get-airport-direct-destinations",
+      departureAirportCode,
+      max,
+      arrivalCountryCode,
+    ],
     queryFn: () =>
       amadeusClient
         .get("/v1/airport/direct-destinations", {
@@ -87,24 +104,20 @@ export const useGetAirportDirectDestinations = ({
   });
 };
 
-export const useGetFlightAvailabilities = () => {
-
-  return useMutation({
-    mutationKey: ["get-flight-availabilities"],
-    mutationFn: (data: FlightAvailabilitiesRequest) =>
+export const useGetFlightAvailabilities = (
+  request: FlightAvailabilitiesRequest,
+  isFinish: boolean
+) => {
+  const shouldFetch = Boolean(isFinish);
+  return useQuery<FlightAvailabilitiesResponse>({
+    queryKey: ["get-flight-availabilities", request],
+    queryFn: () =>
       amadeusClient
         .post<FlightAvailabilitiesResponse>(
           "/v1/shopping/availability/flight-availabilities",
-          {...data},
-          {
-            headers: {
-              "X-HTTP-Method-Override": "GET",
-            },
-          }
+          request
         )
         .then((response) => response.data),
+    enabled: shouldFetch,
   });
 };
-
-
-

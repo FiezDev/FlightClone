@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import "../../../App.css";
 import { parseAsJson, useQueryState } from "nuqs";
 import { flightSchema } from "../../../utils/validation/flightSchema";
-import { useGetNearestRelevantAirports } from "../../../service/amadeusService";
+import { useGetNearestRelevantAirports } from "../../../service/amadeus";
 
 const OriginAirportInput = () => {
   const [flightData, setFlightData] = useQueryState(
@@ -47,7 +47,8 @@ const OriginAirportInput = () => {
 
       return {
         ...previousData,
-        OriginAirportIataCode: value,
+        OriginIataCode: value,
+        isFinish: false,
       };
 
     });
@@ -60,7 +61,7 @@ const OriginAirportInput = () => {
       <Select
         labelId="origin-select-label"
         id="origin-select"
-        value={flightData?.OriginAirportIataCode}
+        value={flightData?.OriginIataCode}
         onChange={(e) => handleOriginChange(e.target.value)}
         placeholder="Select Origin Airport"
         label="Origin"

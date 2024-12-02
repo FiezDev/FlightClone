@@ -1,5 +1,3 @@
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Container,
   Button,
@@ -11,7 +9,6 @@ import "../../App.css";
 import { parseAsJson, useQueryState } from "nuqs";
 import {
   flightSchema,
-  flightSchemaType,
 } from "../../utils/validation/flightSchema";
 import DestinationInput from "./components/DestinationInput";
 import OriginAirportInput from "./components/OriginAirportInput";
@@ -23,16 +20,12 @@ const Flight = () => {
     parseAsJson(flightSchema.parse)
   );
 
-  const { handleSubmit } = useForm<flightSchemaType>({
-    resolver: zodResolver(flightSchema),
-  });
-
-  const onSubmit = (data: flightSchemaType) => {
+  const onSearch = () => {
     setFlightData((prev) => {
       const previousData = prev || flightSchema.parse({});
       return {
         ...previousData,
-        max: data.DestinationAirportIataCode,
+        isFinish: true,
       };
     });
   };
@@ -62,15 +55,13 @@ const Flight = () => {
           {flightData.longitude}
         </Typography>
       )}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 justify-center items-center my-4">
           <OriginAirportInput />
           <DestinationInput />
         </div>
-        <Button type="submit" variant="contained" color="primary" fullWidth>
+        <Button onClick={onSearch} variant="contained" color="primary" fullWidth>
           Search Flights
         </Button>
-      </form>
 
       <FlightListTable/>
     </Container>

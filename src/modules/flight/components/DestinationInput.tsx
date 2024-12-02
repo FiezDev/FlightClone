@@ -6,7 +6,7 @@ import {
 } from "@mui/material";
 import { parseAsJson, useQueryState } from "nuqs";
 import { flightSchema } from "../../../utils/validation/flightSchema";
-import { useGetAirportDirectDestinations } from "../../../service/amadeusService";
+import { useGetAirportDirectDestinations } from "../../../service/amadeus";
 import "../../../App.css";
 
 const DestinationInput = () => {
@@ -17,7 +17,7 @@ const DestinationInput = () => {
 
   const { data: dataAirportDirectDestinations, isFetched } =
     useGetAirportDirectDestinations({
-      departureAirportCode: flightData?.OriginAirportIataCode ?? '',
+      departureAirportCode: flightData?.OriginIataCode ?? '',
     });
 
   const handleDestinationChange = (value: string) => {
@@ -25,7 +25,8 @@ const DestinationInput = () => {
       const previousData = prev || flightSchema.parse({});
       return {
         ...previousData,
-        DestinationAirportIataCode: value,
+        DestinationIataCode: value,
+        isFinish: false,
       };
     });
     return value;
@@ -40,7 +41,7 @@ const DestinationInput = () => {
         labelId="destination-select-label"
         placeholder="Select Destination"
         id="destination-select"
-        value={flightData?.DestinationIataCode ?? ""}
+        value={flightData?.DestinationIataCode}
         onChange={(e) => handleDestinationChange(e.target.value)}
         label="Destination"
       >
