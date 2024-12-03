@@ -1,14 +1,15 @@
 import {
+  Box,
+  CircularProgress,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
 } from "@mui/material";
 import { useEffect } from "react";
-import "../../../App.css";
 import { parseAsJson, useQueryState } from "nuqs";
-import { flightSchema } from "../../../utils/validation/flightSchema";
-import { useGetNearestRelevantAirports } from "../../../service/amadeus";
+import { flightSchema } from "../../utils/validation/flightSchema";
+import { useGetNearestRelevantAirports } from "../../service/amadeus";
 
 const OriginAirportInput = () => {
   const [flightData, setFlightData] = useQueryState(
@@ -36,10 +37,11 @@ const OriginAirportInput = () => {
     }
   }, [setFlightData]);
 
-  const { data: dataNearestRelevantAirports } = useGetNearestRelevantAirports({
-    latitude: flightData?.latitude ?? 0,
-    longitude: flightData?.longitude ?? 0,
-  });
+  const { data: dataNearestRelevantAirports, isFetching } =
+    useGetNearestRelevantAirports({
+      latitude: flightData?.latitude ?? 0,
+      longitude: flightData?.longitude ?? 0,
+    });
 
   const handleOriginChange = (value: string) => {
     setFlightData((prev) => {
@@ -50,12 +52,15 @@ const OriginAirportInput = () => {
         OriginIataCode: value,
         isFinish: false,
       };
-
     });
-    return value
+    return value;
   };
 
-  return (
+  return isFetching ? (
+    <Box sx={{ display: "flex", justifyContent: "center" }}>
+      <CircularProgress />
+    </Box>
+  ) : (
     <FormControl fullWidth variant="outlined">
       <InputLabel id="origin-select-label">Origin</InputLabel>
       <Select
@@ -63,15 +68,11 @@ const OriginAirportInput = () => {
         id="origin-select"
         value={flightData?.OriginIataCode}
         onChange={(e) => handleOriginChange(e.target.value)}
-        placeholder="Select Origin Airport"
         label="Origin"
       >
         {dataNearestRelevantAirports?.data.map((airport) => {
           return [
-            <MenuItem
-              key={`${airport.detailedName}`}
-              value={airport.iataCode}
-            >
+            <MenuItem key={`${airport.detailedName}`} value={airport.iataCode}>
               {airport.name}
             </MenuItem>,
           ];

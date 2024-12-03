@@ -1,18 +1,14 @@
-import {
-  Container,
-  Button,
-  Typography,
-  Link,
-} from "@mui/material";
+import { Container, Button, Typography, Link } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import "../../App.css";
 import { parseAsJson, useQueryState } from "nuqs";
-import {
-  flightSchema,
-} from "../../utils/validation/flightSchema";
-import DestinationInput from "./components/DestinationInput";
-import OriginAirportInput from "./components/OriginAirportInput";
-import FlightListTable from "./components/FlightListTable";
+import { flightSchema } from "../../utils/validation/flightSchema";
+import DestinationInput from "./DestinationInput";
+import OriginAirportInput from "./OriginAirportInput";
+import FlightListTable from "./FlightListTable";
+
+import { DatePicker, TimePicker } from "@mui/x-date-pickers";
+import dayjs from "dayjs";
 
 const Flight = () => {
   const [flightData, setFlightData] = useQueryState(
@@ -55,15 +51,42 @@ const Flight = () => {
           {flightData.longitude}
         </Typography>
       )}
-        <div className="flex gap-4 justify-center items-center my-4">
-          <OriginAirportInput />
-          <DestinationInput />
-        </div>
-        <Button onClick={onSearch} variant="contained" color="primary" fullWidth>
-          Search Flights
-        </Button>
+      <div className="grid grid-cols-2 gap-4 my-4">
+        <OriginAirportInput />
+        <DestinationInput />
+        <DatePicker
+          className="w-full"
+          label="Select Date"
+          value={flightData?.date ? dayjs(flightData.date, "YYYY-MM-DD") : null}
+          onChange={(newValue) => {
+            const formattedDate = newValue ? newValue.format("YYYY-MM-DD") : "";
+            setFlightData((prev) => ({
+              ...prev,
+              date: formattedDate,
+              isFinish: false,
+            }));
+          }}
+        />
+        <TimePicker
+          className="w-full"
+          label="Select Time"
+          value={flightData?.time ? dayjs(flightData.date, "HH:mm:ss") : null}
+          onChange={(newValue) => {
+            const formattedTime = newValue ? newValue.format("HH:mm:ss") : "";
+            setFlightData((prev) => ({
+              ...prev,
+              time: formattedTime,
+              isFinish: false,
+            }));
+          }}
+        />
+      </div>
 
-      <FlightListTable/>
+      <Button onClick={onSearch} variant="contained" color="primary" fullWidth>
+        Search Flights
+      </Button>
+
+      <FlightListTable />
     </Container>
   );
 };
