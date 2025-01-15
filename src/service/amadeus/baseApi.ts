@@ -49,17 +49,17 @@ amadeusClient.interceptors.response.use(
       status: response.data?.status,
       message: response.data?.message,
     };
-    return Promise.reject(response);
+    return Promise.reject(new Error('There is a Problem with Request'));
   },
   (error) => {
     if (error.response.status === 401) {
       console.error("User Expired");
-      return Promise.reject(error);
+      return Promise.reject(new Error(`Request Error- User Expired`));
     }
 
     const res = error.response;
     console.error("Looks like there was a problem. Status", res.status);
-    return Promise.reject(res);
+    return Promise.reject(new Error(`Request Error- ${error}`));
   }
 );
 
