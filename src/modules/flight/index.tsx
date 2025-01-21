@@ -44,9 +44,7 @@ const Flight = () => {
 
   const onSubmit = (data: flightSchemaType) => {
     setFlightData((prev) => {
-      const previousData = prev || flightSchema.parse({});
       return {
-        ...previousData,
         ...data,
         isFinish: true,
       };
@@ -78,25 +76,25 @@ const Flight = () => {
         Swagger Documentation
       </Link>
 
-      <Typography className="pt-4"  variant="h4" component="h1" gutterBottom>
+      <Typography className="pt-4" variant="h4" component="h1" gutterBottom>
         Flight Search
       </Typography>
 
-      {flightData?.latitude && flightData?.longitude && (
-        <div className="flex gap-2 items-center justify-between">
+      <div className="flex gap-2 items-center justify-between">
+        {flightData?.latitude && flightData?.longitude && (
           <Typography variant="body1" className="text-black" gutterBottom>
             Your Location: Latitude: {flightData.latitude}, Longitude:{" "}
             {flightData.longitude}
           </Typography>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={handleRefreshLocation}
-          >
-            Refresh Location
-          </Button>
-        </div>
-      )}
+        )}
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleRefreshLocation}
+        >
+          Refresh Location
+        </Button>
+      </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
