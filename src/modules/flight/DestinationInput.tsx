@@ -10,84 +10,105 @@ import {
 import { parseAsJson, useQueryState } from "nuqs";
 import { useGetAirportDirectDestinations } from "../../service/amadeus";
 import { flightSchema } from "../../utils/validation/flightSchema";
+import { Controller, useFormContext } from "react-hook-form";
 
 const DestinationInput = () => {
   const [flightData, setFlightData] = useQueryState(
     "flightData",
     parseAsJson(flightSchema.parse)
   );
+  const { control } = useFormContext();
 
   const {
-    data: dataAirportDirectDestinations,
+    data: directDestinations,
     isFetching,
     isFetched,
   } = useGetAirportDirectDestinations({
     departureAirportCode: flightData?.OriginIataCode ?? "",
   });
 
-  const sortData = dataAirportDirectDestinations?.data.sort((a, b) => {
+  const sortedDestinations = directDestinations?.data.sort((a, b) => {
     const countryComparison = a.address.countryName.localeCompare(
       b.address.countryName
     );
-    if (countryComparison !== 0) {
-      return countryComparison;
-    }
-    return a.name.localeCompare(b.name);
+    return countryComparison !== 0
+      ? countryComparison
+      : a.name.localeCompare(b.name);
   });
 
-  const menuItems: JSX.Element[] = [];
-  sortData?.forEach((airport, index) => {
-    const currentCountry = airport.address.countryName;
-    const previousCountry =
-      index > 0 ? sortData[index - 1].address.countryName : null;
+  const generateMenuItems = () =>
+    sortedDestinations?.reduce<JSX.Element[]>((items, airport, index) => {
+      const currentCountry = airport.address.countryName;
+      const previousCountry =
+        index > 0 ? sortedDestinations[index - 1].address.countryName : null;
 
-    if (currentCountry !== previousCountry) {
-      menuItems.push(
-        <ListSubheader className="text-right border-b mt-4 border-gray-900" key={`header-${currentCountry}`}>
-          <span >{currentCountry}</span>
-        </ListSubheader>
+      if (currentCountry !== previousCountry) {
+        items.push(
+          <ListSubheader
+            className="text-right border-b mt-4 border-gray-900"
+            key={`header-${currentCountry}`}
+          >
+            {currentCountry}
+          </ListSubheader>
+        );
+      }
+
+      items.push(
+        <MenuItem key={airport.iataCode} value={airport.iataCode}>
+          {airport.name}
+        </MenuItem>
       );
-    }
 
-    menuItems.push(
-      <MenuItem key={airport.iataCode} value={airport.iataCode}>
-        {airport.name}
-      </MenuItem>
-    );
-  });
+      return items;
+    }, []);
 
   const handleDestinationChange = (value: string) => {
-    setFlightData((prev) => {
-      const previousData = prev || flightSchema.parse({});
-      return {
-        ...previousData,
-        DestinationIataCode: value,
-        isFinish: false,
-      };
-    });
-    return value;
+    setFlightData((prev) => ({
+      ...flightSchema.parse(prev || {}),
+      DestinationIataCode: value,
+      isFinish: false,
+    }));
   };
 
-  return !isFetched && !isFetching ? (
-    <div className="flex items-center justify-center w-full">
-      Please Select Origin
-    </div>
-  ) : !isFetched && isFetching ? (
-    <Box sx={{ display: "flex", justifyContent: "center" }}>
-      <CircularProgress />
-    </Box>
-  ) : (
-    <FormControl fullWidth variant="outlined">
+  if (isFetching) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!isFetched) {
+    return (
+      <div className="flex items-center justify-center w-full">
+        Please Select Origin
+      </div>
+    );
+  }
+
+  return (
+    <FormControl fullWidth>
       <InputLabel id="destination-select-label">Destination</InputLabel>
-      <Select
-        labelId="destination-select-label"
-        id="destination-select"
-        value={flightData?.DestinationIataCode}
-        onChange={(e) => handleDestinationChange(e.target.value)}
-        label="Destination"
-      >
-        {menuItems}
-      </Select>
+      <Controller
+        control={control}
+        name="DestinationIataCode"
+        render={({ field: { onChange, value, ...field } }) => (
+          <Select
+            labelId="destination-select-label"
+            id="destination-select"
+            value={value || flightData?.DestinationIataCode || ""}
+            onChange={(e) => {
+              const selectedValue = e.target.value;
+              handleDestinationChange(selectedValue);
+              onChange(selectedValue);
+            }}
+            label="Destination"
+            {...field}
+          >
+            {generateMenuItems()}
+          </Select>
+        )}
+      />
     </FormControl>
   );
 };

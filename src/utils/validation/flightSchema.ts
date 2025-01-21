@@ -7,7 +7,7 @@ export const flightSchema = z.object({
   DestinationIataCode: z.string().optional(),
   isFinish: z.boolean().optional(),
   date: z.string().optional(),
-  time: z.string().optional(),
+  time:  z.string().optional(),
 });
 
   

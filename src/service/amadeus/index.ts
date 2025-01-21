@@ -47,6 +47,8 @@ export const useGetNearestRelevantAirports = ({
   offset = 0,
   sort = "relevance",
 }: NearestRelevantAirportsRequest) => {
+  const shouldFetch = Boolean(latitude !== 0 && longitude !== 0);
+
   return useQuery({
     queryKey: [
       "get-nearest-relevant-airports",
@@ -73,6 +75,7 @@ export const useGetNearestRelevantAirports = ({
           }
         )
         .then((response) => response.data),
+    enabled: shouldFetch,
   });
 };
 

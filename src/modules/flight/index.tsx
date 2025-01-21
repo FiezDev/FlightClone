@@ -1,29 +1,67 @@
+import React from "react";
 import { Container, Button, Typography, Link } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import "../../App.css";
 import { parseAsJson, useQueryState } from "nuqs";
-import { flightSchema } from "../../utils/validation/flightSchema";
+import {
+  flightSchema,
+  flightSchemaType,
+} from "../../utils/validation/flightSchema";
 import DestinationInput from "./DestinationInput";
 import OriginAirportInput from "./OriginAirportInput";
 import FlightListTable from "./FlightListTable";
-
-import { DatePicker, TimePicker } from "@mui/x-date-pickers";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { FormProvider, useForm } from "react-hook-form";
+import "../../App.css";
+import DateTimeInput from "./DateTimeInput";
 import dayjs from "dayjs";
+import useGeolocation from "../../hooks/useGeolocation"; // Assuming useGeolocation hook is in the hooks folder
 
 const Flight = () => {
+  const { latitude, longitude, refreshLocation } = useGeolocation();
+
   const [flightData, setFlightData] = useQueryState(
     "flightData",
     parseAsJson(flightSchema.parse)
   );
 
-  const onSearch = () => {
+  const methods = useForm<flightSchemaType>({
+    resolver: zodResolver(flightSchema),
+    mode: "onSubmit",
+    defaultValues: {
+      OriginIataCode: flightData?.OriginIataCode ?? "",
+      DestinationIataCode: flightData?.DestinationIataCode ?? "",
+      latitude: flightData?.latitude ?? 0,
+      longitude: flightData?.longitude ?? 0,
+      date: flightData?.date ?? dayjs().startOf("day").toString(),
+      time: flightData?.time ?? dayjs().add(1, "hour").toString(),
+      isFinish: false,
+    },
+  });
+
+  const {
+    handleSubmit,
+    formState: { isValid },
+  } = methods;
+
+  const onSubmit = (data: flightSchemaType) => {
+    console.log(data);
     setFlightData((prev) => {
       const previousData = prev || flightSchema.parse({});
       return {
         ...previousData,
+        ...data,
         isFinish: true,
       };
     });
+  };
+
+  const handleRefreshLocation = () => {
+    refreshLocation();
+    setFlightData((prev) => ({
+      ...prev,
+      latitude,
+      longitude,
+    }));
   };
 
   return (
@@ -42,49 +80,45 @@ const Flight = () => {
         Swagger Documentation
       </Link>
 
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography className="pt-4"  variant="h4" component="h1" gutterBottom>
         Flight Search
       </Typography>
-      {flightData?.latitude && flightData?.longitude && (
-        <Typography variant="body1" className="text-black" gutterBottom>
-          Your Location: Latitude: {flightData.latitude}, Longitude:{" "}
-          {flightData.longitude}
-        </Typography>
-      )}
-      <div className="grid grid-cols-2 gap-4 my-4">
-        <OriginAirportInput />
-        <DestinationInput />
-        <DatePicker
-          className="w-full"
-          label="Select Date"
-          value={flightData?.date ? dayjs(flightData.date, "YYYY-MM-DD") : null}
-          onChange={(newValue) => {
-            const formattedDate = newValue ? newValue.format("YYYY-MM-DD") : "";
-            setFlightData((prev) => ({
-              ...prev,
-              date: formattedDate,
-              isFinish: false,
-            }));
-          }}
-        />
-        <TimePicker
-          className="w-full"
-          label="Select Time"
-          value={flightData?.time ? dayjs(flightData.date, "HH:mm:ss") : null}
-          onChange={(newValue) => {
-            const formattedTime = newValue ? newValue.format("HH:mm:ss") : "";
-            setFlightData((prev) => ({
-              ...prev,
-              time: formattedTime,
-              isFinish: false,
-            }));
-          }}
-        />
-      </div>
 
-      <Button onClick={onSearch} variant="contained" color="primary" fullWidth>
-        Search Flights
-      </Button>
+      {flightData?.latitude && flightData?.longitude && (
+        <div className="flex gap-2 items-center justify-between">
+          <Typography variant="body1" className="text-black" gutterBottom>
+            Your Location: Latitude: {flightData.latitude}, Longitude:{" "}
+            {flightData.longitude}
+          </Typography>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={handleRefreshLocation}
+          >
+            Refresh Location
+          </Button>
+        </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="grid grid-cols-2 gap-4 my-4 w-full"
+      >
+        <FormProvider {...methods}>
+          <OriginAirportInput />
+          <DestinationInput />
+          <DateTimeInput />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={!isValid}
+            className="col-span-2"
+          >
+            Search Flights
+          </Button>
+        </FormProvider>
+      </form>
 
       <FlightListTable />
     </Container>

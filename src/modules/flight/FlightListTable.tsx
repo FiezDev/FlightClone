@@ -17,6 +17,7 @@ import {
 } from "../../service/amadeus/type/flightAvailabilities";
 import { useGetFlightAvailabilities } from "../../service/amadeus";
 import FlightRow from "./components/flightListTable/FlightRow";
+import dayjs from "dayjs";
 
 const headers = [
   { id: 1, text: "Flight ID" },
@@ -28,13 +29,13 @@ const headers = [
 ];
 
 export const renderAvailability = (availabilityClasses: AvailabilityClass[]) => (
-  <Box>
+  <div>
     {availabilityClasses.map((cls) => (
-      <Typography key={cls.class}>
+      <p key={cls.class}>
         {cls.class}: {cls.numberOfBookableSeats} seats
-      </Typography>
+      </p>
     ))}
-  </Box>
+  </div>
 );
 
 const FlightListTable = () => {
@@ -42,6 +43,11 @@ const FlightListTable = () => {
     "flightData",
     parseAsJson(flightSchema.parse)
   );
+
+  const flightDate = dayjs(flightData?.date).format("YYYY-MM-DD");
+  const flightTime = dayjs(flightData?.time).format("HH:mm:ss");
+  const currentDate = dayjs().format("YYYY-MM-DD");
+  const currentTime = dayjs().format("HH:mm:ss");
 
   const {
     data: dataNearestRelevantAirports,
@@ -55,8 +61,8 @@ const FlightListTable = () => {
           originLocationCode: flightData?.OriginIataCode ?? "",
           destinationLocationCode: flightData?.DestinationIataCode ?? "",
           departureDateTime: {
-            date: flightData?.date ?? "",
-            time: flightData?.time ?? "",
+            date: flightDate ?? currentDate,
+            time: flightTime ?? currentTime,
           },
         },
       ],
@@ -73,17 +79,17 @@ const FlightListTable = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
+      <div className="flex justify-center mt-4">
         <CircularProgress />
-      </Box>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Typography variant="h6" color="error">
+      <p className="text-red-600 text-lg font-semibold">
         An error occurred: {error.message}
-      </Typography>
+      </p>
     );
   }
 
@@ -93,48 +99,37 @@ const FlightListTable = () => {
     dataNearestRelevantAirports.data.length === 0
   ) {
     return (
-      <Typography className="w-full text-center pt-12" variant="h6">
-        No Flight Available.
-        <br />
+      <p className="w-full text-center pt-12 text-lg font-medium">
+        No Flight Available.<br />
         Please reselect the origin and destination, then click 'Search Flight'.
-      </Typography>
+      </p>
     );
   }
 
   return (
-    <Box sx={{ padding: 3 }}>
-      <TableContainer component={Paper} sx={{ maxHeight: 440 }}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
+    <div className="p-3">
+      <div className="overflow-auto max-h-96">
+        <table className="table-auto w-full border-collapse border border-gray-300">
+          <thead className="sticky top-0 bg-blue-500">
+            <tr>
               {headers.map((head) => (
-                <TableCell
+                <th
                   key={head.id}
-                  sx={{
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 1,
-                    backgroundColor: "#3b82f6",
-                    color: "white",
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    borderRight: "1px solid white",
-                    whiteSpace: "nowrap",
-                  }}
+                  className="text-white font-bold text-center border border-white whitespace-nowrap px-2 py-1"
                 >
                   {head.text}
-                </TableCell>
+                </th>
               ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
+            </tr>
+          </thead>
+          <tbody>
             {dataNearestRelevantAirports.data.map((flight) => (
               <FlightRow key={flight.id} flight={flight} />
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 
