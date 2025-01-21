@@ -29,8 +29,8 @@ const Flight = () => {
     defaultValues: {
       OriginIataCode: flightData?.OriginIataCode ?? "",
       DestinationIataCode: flightData?.DestinationIataCode ?? "",
-      latitude: flightData?.latitude ?? 0,
-      longitude: flightData?.longitude ?? 0,
+      latitude: latitude,
+      longitude: longitude,
       date: flightData?.date ?? dayjs().startOf("day").toString(),
       time: flightData?.time ?? dayjs().add(1, "hour").toString(),
       isFinish: false,
@@ -43,9 +43,11 @@ const Flight = () => {
   } = methods;
 
   const onSubmit = (data: flightSchemaType) => {
-    setFlightData((prev) => {
+    setFlightData(() => {
       return {
         ...data,
+        latitude : latitude,
+        longitude : longitude,
         isFinish: true,
       };
     });
