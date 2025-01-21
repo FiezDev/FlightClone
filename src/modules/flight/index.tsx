@@ -12,8 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 import "../../App.css";
 import DateTimeInput from "./DateTimeInput";
-import dayjs from "dayjs";
-import useGeolocation from "../../hooks/useGeolocation"; // Assuming useGeolocation hook is in the hooks folder
+import useGeolocation from "../../hooks/useGeolocation";
 
 const Flight = () => {
   const { latitude, longitude, refreshLocation } = useGeolocation();
@@ -26,15 +25,6 @@ const Flight = () => {
   const methods = useForm<flightSchemaType>({
     resolver: zodResolver(flightSchema),
     mode: "onSubmit",
-    defaultValues: {
-      OriginIataCode: flightData?.OriginIataCode ?? "",
-      DestinationIataCode: flightData?.DestinationIataCode ?? "",
-      latitude: flightData?.latitude ?? 0,
-      longitude: flightData?.longitude ?? 0,
-      date: flightData?.date ?? dayjs().startOf("day").toString(),
-      time: flightData?.time ?? dayjs().add(1, "hour").toString(),
-      isFinish: false,
-    },
   });
 
   const {
@@ -43,7 +33,6 @@ const Flight = () => {
   } = methods;
 
   const onSubmit = (data: flightSchemaType) => {
-    console.log(data);
     setFlightData((prev) => {
       const previousData = prev || flightSchema.parse({});
       return {

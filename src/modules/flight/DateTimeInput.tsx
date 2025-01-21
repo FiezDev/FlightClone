@@ -55,7 +55,7 @@ const DateTimeInput = () => {
           <TimePicker
             label="Select Time"
             className="w-full"
-            {...(isSameDate && { minDate })} 
+            {...(isSameDate && { minTime })} 
             value={value ? dayjs(value) : dayjs(flightData?.time ?? minTime)}
             onChange={(newValue) => {
               const formattedTime = newValue?.toISOString() ?? null;
