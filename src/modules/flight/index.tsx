@@ -1,4 +1,3 @@
-import React from "react";
 import { Container, Button, Typography, Link } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { parseAsJson, useQueryState } from "nuqs";
